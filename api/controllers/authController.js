@@ -186,7 +186,7 @@ export const preSignup = async (req, res) => {
       checkCode: code,
     });
 
-    console.log("object");
+    console.log("object", process.env.AWS_REGION, config.EMAIL_FROM);
     config.AWSSES.sendEmail(
       emailTemplate(
         config.EMAIL_FROM,
