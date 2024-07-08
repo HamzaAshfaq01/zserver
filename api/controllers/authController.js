@@ -142,12 +142,6 @@ export const preSignup = async (req, res) => {
           "Please enter a same password in the password & confirm Password field",
       });
     }
-    if (!password || password.length >= 9) {
-      return res.json({
-        error:
-          "Please enter a valid password or password length should be more than 8 characters.",
-      });
-    }
 
     console.log("object");
     const checkUser = await Auth.findOne({ email });
