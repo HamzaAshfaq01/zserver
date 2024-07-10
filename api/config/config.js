@@ -7,20 +7,21 @@ export const DATABASE_LOCAL = process.env.DATABASE_LOCAL
 
 
 export const DATABASE_CLOUD = process.env.DATABASE_CLOUD
-export const AWS_A_KEY_ID =  process.env.AWS_A_KEY_ID
+export const AWS_ACCESS_KEY_ID =  process.env.AWS_ACCESS_KEY_ID
 
 
-export const AWS_A_KEY = process.env.AWS_A_KEY
+export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
 
 export const EMAIL_FROM = process.env.EMAIL_FROM
+export const EMAIL_FROM2 = process.env.EMAIL_FROM2
 export const REPLY_TO = process.env.REPLY_TO
 
 export const AWS_REGION=  process.env.AWS_REGION
 export const AWS_API_VERSION=  process.env.AWS_API_VERSION
 
 const awsConfig = {
-    accessKeyId: AWS_A_KEY_ID,
-    secretAccessKey: AWS_A_KEY,
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
     region: AWS_REGION,
     apiVersion: AWS_API_VERSION
 }

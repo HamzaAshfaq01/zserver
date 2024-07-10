@@ -16,6 +16,8 @@ color:white;
 // <img src=${"https://myghar.s3.ap-northeast-1.amazonaws.com/NKttOqV8wzv2LAii70bmi.jpeg "}/>
 
 const emailTemplate = (emailFrom, emailTo, subject, content) => {
+  console.log(emailFrom)
+
   return {
     Source: emailFrom,
     Destination: {

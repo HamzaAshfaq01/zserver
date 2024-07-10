@@ -23,9 +23,6 @@ app.use(cors());
 const port = process.env.PORT ||  9000
 // import & pass in route middleware
 import authRoute from "./routes/authRoute.js";
-app.use("/testing", (req,res)=>{
-  res.json("API Working")
-});
 app.use("/api/v1", authRoute);
 
 // cron.schedule("* * * * *", async () => {

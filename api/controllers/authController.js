@@ -14,7 +14,7 @@ const style = `
 font-weight:bold;
 font-size:14px;
 padding-left:35px;
-color:white;
+color:black;
 text-decoration: underline;
 `;
 
@@ -135,13 +135,19 @@ export const preSignup = async (req, res) => {
         error: "Please enter a valid phone_number",
       });
     }
-
+    if (!password ) {
+      return res.json({
+        error:
+          "Please enter a valid password",
+      });
+    }
     if (password !== confirm_password) {
       return res.json({
         error:
           "Please enter a same password in the password & confirm Password field",
       });
     }
+    
 
     console.log("object");
     const checkUser = await Auth.findOne({ email });
@@ -180,31 +186,52 @@ export const preSignup = async (req, res) => {
       checkCode: code,
     });
 
-    console.log("object", process.env.AWS_REGION, config.EMAIL_FROM);
-    config.AWSSES.sendEmail(
-      emailTemplate(
-        config.EMAIL_FROM,
-        email,
-        "Account Activate OTP",
-        // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-        `        <h2 style='text-align:Center ; text-decoration: underline;'> Hello ${first_name} ${last_name} 👷‍♂️</h2>
-        <p style='padding-left:22px ; font-weight:bold ; text-decoration: underline ; font-size:16px'>Pre Sign Up Verification Code </p>
-           <p style=' ${style}'>Your Otp :- <span> ${code}🚨</span></p>
-        <b style='padding-left:22px ; color:white ; text-decoration: underline;'>Please read your otp and put on form for activate your account.</b>
-        `
-      ),
-      (err, data) => {
-        if (err) {
-          return console.log(err);
-          res.status(500).json({ ok: false });
-        } else {
-          console.log(data);
-          return res
-            .status(200)
-            .json({ ok: true, message: "Email sent successfully" });
-        }
-      }
-    );
+    console.log("object");
+    // config.AWSSES.sendEmail(
+    //   emailTemplate(
+    //     config.EMAIL_FROM,
+    //     email,
+    //     "Account Activate OTP",
+    //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+    //     `        <h2 style='text-align:Center ; text-decoration: underline;'> Hello ${first_name} ${last_name} 👷‍♂️</h2>
+    //     <p style='padding-left:22px ; font-weight:bold ; text-decoration: underline ; font-size:16px'>Pre Sign Up Verification Code </p>
+    //        <p style=' ${style}'>Your Otp :- <span> ${code}🚨</span></p>
+    //     <b style='padding-left:22px ; color:white ; text-decoration: underline;'>Please read your otp and put on form for activate your account.</b>
+    //     `
+    //   ),
+   
+    sendHTML(
+      config.EMAIL_FROM,
+      email,
+      
+      "Account Activate OTP",
+      `        <h2 style='text-align:Center ; text-decoration: underline;'> Dear [ ${first_name} ${last_name}] 👷‍♂️</h2>
+          <p style='padding-left:22px ; font-weight:bold ; text-decoration: underline ; font-size:16px'>Pre Sign Up Verification Code </p>
+          <p style='padding-left:22px ; font-size:16px'>To ensure the security of your account, please use the One-Time Password ${code} provided below. This OTP is required to complete your login or transaction on Ziaja.IO. </p>
+
+            <p style=' ${style}'>Your OTP :- <span> ${code}🚨</span></p>
+          <p style='padding-left:22px ; font-size:16px'>For your safety, this OTP is valid only for a limited time and should not be shared with anyone. If you did not request this OTP or have any concerns, please contact our support team immediately. </p>
+<p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+          <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>          <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+          <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+         
+          `
+    ),
+           res.json({ ok: true, message: "Email sent successfully" });
+        
+//       "Dear [Recipient's Name],
+
+// To ensure the security of your account, please use the One-Time Password (OTP) provided below. This OTP is required to complete your login or transaction on Ziaja.IO.
+
+// Your OTP: [OTP Code ]
+
+// For your safety, this OTP is valid only for a limited time and should not be shared with anyone. If you did not request this OTP or have any concerns, please contact our support team immediately.
+
+// Thank you for using Ziaja.IO.
+
+// Best regards,
+// The Ziaja.IO Team"
+    
   } catch (err) {
     console.log(err);
     res.json({
@@ -544,6 +571,66 @@ export const RefrelLink = async (req, res) => {
 //     });
 //   }
 // };
+// export const forgetPassword = async (req, res) => {
+//   try {
+//     const { email } = req.body;
+
+//     if (!email) {
+//       return res.json({
+//         error: "Please Enter a Valid Email",
+//       });
+//     }
+
+//     const user = await Auth.findOne({ email });
+
+//     if (!user) {
+//       return res.json({
+//         success: false,
+//         error: `User Not found. this ${email}`,
+//       });
+//     }
+//     const token = jwt.sign({ id: user._id }, config.JWT_SECRET_KEY, {
+//       expiresIn: "1h",
+//     }); //1 hour
+//     const resetCode = nanoid(5);
+//     user.resetCode = resetCode;
+//     user.save();
+//     config.AWSSES.sendEmail(
+//       emailTemplate(
+//         config.EMAIL_FROM,
+//         email,
+//         "Access Account OTP",
+//         `        <h2 style='text-align:Center ; text-decoration: underline; color:white;'> Hello ${user.first_name} ${user.last_name} </h2>
+//           <p style='padding-left:22px ; font-weight:bold ; font-size:16px ; text-decoration: underline; color:white;'>Forget Password Verification Code </p>     
+//           <b style='padding-left:22px ;text-decoration: underline; color:white; '>Please click the link below to Access your account</b> <br/>
+
+//                     <a style='padding-left:22px ;text-decoration: underline; color:white;' href='${config.CLIENT_URL}/auth/access-account/${token}'> Access my account </a>
+          
+
+//              <p style=' ${style}'>Your Otp :- <span style=''> ${resetCode}</span></p>
+//           <b style='padding-left:22px ; text-decoration: underline; color:white;'>Please read your otp and put on form for access your account.</b>
+//           `
+//       ),
+//       (err, data) => {
+//         if (err) {
+//           return console.log(err);
+//           res.json({ ok: false });
+//         } else {
+//           console.log(data);
+//           return res.json({
+//             ok: true,
+//             message: "Please check your email to access your account",
+//           });
+//         }
+//       }
+//     );
+//   } catch {
+//     return res.status(400).json({
+//       error: "Something went wrong... Try again",
+//     });
+//   }
+// };
+
 export const forgetPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -568,35 +655,34 @@ export const forgetPassword = async (req, res) => {
     const resetCode = nanoid(5);
     user.resetCode = resetCode;
     user.save();
-    config.AWSSES.sendEmail(
-      emailTemplate(
+   
+      sendHTML(
         config.EMAIL_FROM,
         email,
+        
         "Access Account OTP",
-        `        <h2 style='text-align:Center ; text-decoration: underline; color:white;'> Hello ${user.first_name} ${user.last_name} </h2>
-          <p style='padding-left:22px ; font-weight:bold ; font-size:16px ; text-decoration: underline; color:white;'>Forget Password Verification Code </p>     
-          <b style='padding-left:22px ;text-decoration: underline; color:white; '>Please click the link below to Access your account</b> <br/>
+        `        <h2 style='text-align:Center ; text-decoration: underline;'> Dear [ ${user.first_name} ${user.last_name}] 👷‍♂️</h2>
+          <p style='padding-left:22px ; font-weight:bold ; text-decoration: underline ; font-size:16px'>Forget Password Verification Code </p>
+          <p style='padding-left:22px ; font-size:16px'>To ensure the security of your account, please use the One-Time Password ${resetCode} provided below. This OTP is required to complete your login or transaction on Ziaja.IO. </p>
 
-                    <a style='padding-left:22px ;text-decoration: underline; color:white;' href='${config.CLIENT_URL}/auth/access-account/${token}'> Access my account </a>
-          
-
-             <p style=' ${style}'>Your Otp :- <span style=''> ${resetCode}</span></p>
-          <b style='padding-left:22px ; text-decoration: underline; color:white;'>Please read your otp and put on form for access your account.</b>
+            <p style=' ${style}'>Your OTP :- <span> ${resetCode}🚨</span></p>
+          <p style='padding-left:22px ; font-size:16px'>For your safety, this OTP is valid only for a limited time and should not be shared with anyone. If you did not request this OTP or have any concerns, please contact our support team immediately. </p>
+          <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+          <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+          <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+          <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+         
           `
       ),
-      (err, data) => {
-        if (err) {
-          return console.log(err);
-          res.json({ ok: false });
-        } else {
-          console.log(data);
-          return res.json({
+    
+      
+           res.json({
             ok: true,
             message: "Please check your email to access your account",
           });
-        }
-      }
-    );
+        
+      
+   
   } catch {
     return res.status(400).json({
       error: "Something went wrong... Try again",
@@ -1037,40 +1123,69 @@ export const depositUser = async (req, res) => {
   });
   console.log("object");
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
-      user.email,
-      config.REPLY_TO,
-      "User Amount Verification Request",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ;  text-decoration: underline;'> User Amount  Verification Code 👷‍♂️</h2>
-        <p style='padding-left:22px ; font-weight:bold ; font-size:16px ;  text-decoration: underline;'>You have received a new Invester enquiry </p>
-        <h4 style=' ${style}'> Invester Information </h4>
-        <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
-        <p style=' ${style}'> Email:- ${user.email}  </p>
-        <p style=' ${style}'> Phone:- ${user.phone_number} </p>
-        <p style=' ${style}'> AccountId:- ${user.accountId} </p>
-        <p style=' ${style}'> TransactionId:- ${user.transactionId} </p>
+  // config.AWSSES.sendEmail(
+    // emailTemplate(
+    //   user.email,
+    //   config.REPLY_TO,
+    //   "User Amount Verification Request",
+    //   // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+    //   `        <h2 style='text-align:Center ;  text-decoration: underline;'> User Amount  Verification Code 👷‍♂️</h2>
+    //     <p style='padding-left:22px ; font-weight:bold ; font-size:16px ;  text-decoration: underline;'>You have received a new Invester enquiry </p>
+    //     <h4 style=' ${style}'> Invester Information </h4>
+    //     <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
+    //     <p style=' ${style}'> Email:- ${user.email}  </p>
+    //     <p style=' ${style}'> Phone:- ${user.phone_number} </p>
+    //     <p style=' ${style}'> AccountId:- ${user.accountId} </p>
+    //     <p style=' ${style}'> TransactionId:- ${user.transactionId} </p>
 
-        <p style=' ${style}'> Message:- ${discription}  </p>
-           <p style=' ${style}'>User Otp :-  ${code}</p>
-        <b style='padding-left:22px;'>Please read your otp and put on form for verify user payment.</b>
-        `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.status(500).json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          message: "Your Investment Verification Request Send  Successfully",
-          investment: userInvestment,
-        });
-      }
-    }
-  );
+    //     <p style=' ${style}'> Message:- ${discription}  </p>
+    //        <p style=' ${style}'>User Otp :-  ${code}</p>
+    //     <b style='padding-left:22px;'>Please read your otp and put on form for verify user payment.</b>
+    //     `
+    // ),
+    // (err, data) => {
+    //   if (err) {
+    //     return console.log(err);
+    //     res.status(500).json({ ok: false });
+    //   } else {
+    //     console.log(data);
+    //     return res.json({
+    //       ok: true,
+    //       message: "Your Investment Verification Request Send  Successfully",
+    //       investment: userInvestment,
+    //     });
+    //   }
+    // }
+  // );
+  sendHTML(
+    config.EMAIL_FROM,
+    config.EMAIL_FROM2,
+    
+    "User Amount Verification Request",
+    `        <h2 style='text-align:Center ; text-decoration: underline;'> Dear [ ${user.first_name} ${user.last_name}] 👷‍♂️</h2>
+      <p style='padding-left:22px ; font-weight:bold ; text-decoration: underline ; font-size:16px'>User Amount  Verification Code 👷‍♂️ </p>
+ <p style='padding-left:22px ; font-weight:bold ; font-size:16px ;  text-decoration: underline;'>You have received a new Invester enquiry </p>
+        <h4 style=' ${style}'> Invester Information </h4>
+       <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
+       <p style=' ${style}'> Email:- ${user.email}  </p>
+       <p style=' ${style}'> Phone:- ${user.phone_number} </p>
+      <p style=' ${style}'> AccountId:- ${accountId} </p>
+       <p style=' ${style}'> TransactionId:- ${transactionId} </p>
+        <p style=' ${style}'>User OTP :- <span> ${code}🚨</span></p>
+
+      <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+      <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+      <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+      <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+     
+      `
+  ),
+
+  
+       res.json({
+        ok: true,
+        message: "Your Investment Verification Request Send  Successfully",
+      });
 
   // const commission = await amount * 0.1
   // const user = await Auth.findById(req.user.id);
@@ -1254,36 +1369,58 @@ export const ApprovedepositUser = async (req, res) => {
   // });
 
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
-      config.EMAIL_FROM,
-      LoginUser.email,
-      " Your Deposit Requset Approve Successfully",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ;  text-decoration: underline;'> Your Deposit Requset Approve Successfully 👷‍♂️</h2>
-          <h4 style=' ${style}'> Your Deposit Information </h4>
-          <p style=' ${style}'> Name:-  hello ${LoginUser.first_name} ${LoginUser.last_name} </p>
-          <p style=' ${style}'> Amount:- ${LoginUser.totalAmount} </p>
-          <p style=' ${style}'> Requested Date:- ${LoginUser.createdAt} </p>
+  // config.AWSSES.sendEmail(
+  //   emailTemplate(
+  //     config.EMAIL_FROM,
+  //     LoginUser.email,
+  //     " Your Deposit Requset Approve Successfully",
+  //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+  //     `        <h2 style='text-align:Center ;  text-decoration: underline;'> Your Deposit Requset Approve Successfully 👷‍♂️</h2>
+  //         <h4 style=' ${style}'> Your Deposit Information </h4>
+  //         <p style=' ${style}'> Name:-  hello ${LoginUser.first_name} ${LoginUser.last_name} </p>
+  //         <p style=' ${style}'> Amount:- ${LoginUser.totalAmount} </p>
+  //         <p style=' ${style}'> Requested Date:- ${LoginUser.createdAt} </p>
          
-          `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          user: LoginUser,
-          userHead: userHead,
-          message:
-            "Deposit Approve Successfully and Approval send on User Email",
-        });
-      }
-    }
-  );
+  //         `
+  //   ),
+    // (err, data) => {
+    //   if (err) {
+    //     return console.log(err);
+    //     res.json({ ok: false });
+    //   } else {
+    //     console.log(data);
+    //     return res.json({
+    //       ok: true,
+    //       user: LoginUser,
+    //       userHead: userHead,
+    //       message:
+    //         "Deposit Approve Successfully and Approval send on User Email",
+    //     });
+    //   }
+    // }
+  // );
+  sendHTML(
+    config.EMAIL_FROM,
+    LoginUser.email,
+    
+    "Your Deposit Requset Approve Successfully",
+    `        <h2 style='text-align:Center ; text-decoration: underline;'> Dear [ ${LoginUser.first_name} ${LoginUser.first_name}] 👷‍♂️</h2>
+     <h2 style='text-align:Center ;  text-decoration: underline;'> Your Deposit Requset Approve Successfully 👷‍♂️</h2>
+         <h4 style=' ${style}'> Your Deposit Information </h4>
+           <p style=' ${style}'> Amount:- ${LoginUser.totalAmount} </p>
+           <p style=' ${style}'> Requested Date:- ${LoginUser.createdAt} </p>
+
+      <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+      <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+      <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+      <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+     
+      `
+  )
+  res.json({
+    ok: true,
+    message: "Deposit Approve Successfully and Approval send on User Email",
+  });
 };
 
 export const RejectDepositUser = async (req, res) => {
@@ -1306,7 +1443,7 @@ export const RejectDepositUser = async (req, res) => {
 
   const findUser = await Investment.findOne({ checkCode: code }).populate(
     "investedBy",
-    "first_name last_name email "
+    "first_name last_name email totalAmount "
   );
   if (!findUser) {
     return res.json({
@@ -1326,35 +1463,58 @@ export const RejectDepositUser = async (req, res) => {
   );
 
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
+  // config.AWSSES.sendEmail(
+  //   emailTemplate(
+  //     config.EMAIL_FROM,
+  //     findUser.investedBy.email,
+  //     " Your Deposit Requset Reject UnSuccessfully",
+  //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+  //     `        <h2 style='text-align:Center ; text-decoration: underline;'> Your Deposit Requset Reject UnSuccessfully 👷‍♂️</h2>
+  //         <h4 style=' ${style}'> Your Deposit Information </h4>
+  //         <p style=' ${style}'> Name:-  hello ${findUser.investedBy.first_name} ${findUser.investedBy.last_name} </p>
+  //         <p style=' ${style}'> Amount:- ${findUser.investedBy.totalAmount} </p>
+  //         <p style=' ${style}'> Reason:- ${reason} </p>
+  //         <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
+         
+  //         `
+  //   ),
+  //   (err, data) => {
+  //     if (err) {
+  //       return console.log(err);
+  //       res.json({ ok: false });
+  //     } else {
+  //       console.log(data);
+  //       return res.json({
+  //         ok: true,
+  //         message:
+  //           "Deposit Reject UnSuccessfully and Rejection send on User Email22222222222",
+  //       });
+  //     }
+  //   }
+  // );
+  sendHTML(
       config.EMAIL_FROM,
       findUser.investedBy.email,
-      " Your Deposit Requset Reject UnSuccessfully",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ; text-decoration: underline;'> Your Deposit Requset Reject UnSuccessfully 👷‍♂️</h2>
-          <h4 style=' ${style}'> Your Deposit Information </h4>
-          <p style=' ${style}'> Name:-  hello ${findUser.investedBy.first_name} ${findUser.investedBy.last_name} </p>
-          <p style=' ${style}'> Amount:- ${findUser.investedBy.totalAmount} </p>
+    
+    "Your Deposit Requset Reject UnSuccessfully",
+    `        <h2 style='text-align:Center ; text-decoration: underline;'> Dear [ ${findUser.investedBy.first_name} ${findUser.investedBy.last_name}] 👷‍♂️</h2>
+     <h2 style='text-align:Center ;  text-decoration: underline;'> Your Deposit Requset Reject UnSuccessfully 👷‍♂️</h2>
+         <h4 style=' ${style}'> Your Deposit Information </h4>
+           <p style=' ${style}'> Amount:- ${findUser.investedBy.totalAmount} </p>
           <p style=' ${style}'> Reason:- ${reason} </p>
-          <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
-         
-          `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          message:
-            "Deposit Reject UnSuccessfully and Rejection send on User Email",
-        });
-      }
-    }
-  );
+
+
+      <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+      <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+      <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+      <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+     
+      `
+  )
+  res.json({
+    ok: true,
+    message: "Deposit Reject UnSuccessfully and Rejection send on User Email",
+  });
 };
 
 export const withDrawRequest = async (req, res) => {
@@ -1387,39 +1547,67 @@ export const withDrawRequest = async (req, res) => {
     checkCode: code,
   });
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
-      user.email,
-      config.REPLY_TO,
-      "User WithDraw Amount  Request",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ;  text-decoration: underline;'> User WithDraw  Verification Code 👷‍♂️</h2>
-        <p style='padding-left:22px ;  text-decoration: underline; font-weight:bold ; font-size:16px'>You have received a new WithDraw Request </p>
-        <h4 style=' ${style}'> User WithDraw Information </h4>
-        <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
-        <p style=' ${style}'> Email:- ${user.email}  </p>
-        <p style=' ${style}'> Phone:- ${user.phone_number} </p>
-        <p style=' ${style}'> Amount:- ${amount} </p>
-        <p style=' ${style}'> AccountId:- ${accountId} </p>
-        <p style=' ${style}'> Message:- ${description}  </p>
-           <p style=' ${style}'>User Otp :-  ${code}</p>
-        <b style='padding-left:22px ; '>Please read your otp and put on form for verify user payment.</b>
-        `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.status(500).json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          message: "Your WithDraw Request Send  Successfully",
-          investment: userInvestment,
-        });
-      }
-    }
-  );
+  // config.AWSSES.sendEmail(
+  //   emailTemplate(
+  //     user.email,
+  //     config.REPLY_TO,
+  //     "User WithDraw Amount  Request",
+  //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+  //     `        <h2 style='text-align:Center ;  text-decoration: underline;'> User WithDraw  Verification Code 👷‍♂️</h2>
+  //       <p style='padding-left:22px ;  text-decoration: underline; font-weight:bold ; font-size:16px'>You have received a new WithDraw Request </p>
+  //       <h4 style=' ${style}'> User WithDraw Information </h4>
+  //       <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
+  //       <p style=' ${style}'> Email:- ${user.email}  </p>
+  //       <p style=' ${style}'> Phone:- ${user.phone_number} </p>
+  //       <p style=' ${style}'> Amount:- ${amount} </p>
+  //       <p style=' ${style}'> AccountId:- ${accountId} </p>
+  //       <p style=' ${style}'> Message:- ${description}  </p>
+  //          <p style=' ${style}'>User Otp :-  ${code}</p>
+  //       <b style='padding-left:22px ; '>Please read your otp and put on form for verify user payment.</b>
+  //       `
+  //   ),
+  //   (err, data) => {
+  //     if (err) {
+  //       return console.log(err);
+  //       res.status(500).json({ ok: false });
+  //     } else {
+  //       console.log(data);
+  //       return res.json({
+  //         ok: true,
+  //         message: "Your WithDraw Request Send  Successfully",
+  //         investment: userInvestment,
+  //       });
+  //     }
+  //   }
+  // );
+
+  sendHTML(
+    config.EMAIL_FROM,
+    config.EMAIL_FROM2,
+  "User WithDraw Amount  Request",
+  `           <h2 style='text-align:Center ;  text-decoration: underline;'> User WithDraw  Verification Code 👷‍♂️</h2>
+         <p style='padding-left:22px ;  text-decoration: underline; font-weight:bold ; font-size:16px'>You have received a new WithDraw Request </p>
+         <h4 style=' ${style}'> User WithDraw Information </h4>
+         <p style=' ${style}'> Name:- ${user.first_name} ${user.last_name} </p>
+         <p style=' ${style}'> Email:- ${user.email}  </p>
+         <p style=' ${style}'> Phone:- ${user.phone_number} </p>
+         <p style=' ${style}'> Amount:- ${amount} </p>
+         <p style=' ${style}'> AccountId:- ${accountId} </p>
+         <p style=' ${style}'> Message:- ${description}  </p>
+            <p style=' ${style}'>User Otp :-  ${code}</p>
+
+
+    <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+    <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+    <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+    <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+   
+    `
+)
+res.json({
+  ok: true,
+  message: "Your WithDraw Request Send  Successfully",
+});
 
   // const commission = await amount * 0.1
   // const user = await Auth.findById(req.user.id);
@@ -1458,54 +1646,85 @@ export const approveWithDraw = async (req, res) => {
 
   const findUser = await WithDraw.findOne({ checkCode: code }).populate(
     "WithDrawRequestedBy",
-    "first_name last_name email "
+    "first_name last_name email balance _id"
   );
   if (!findUser) {
     return res.json({
       error: "No WithDraw Request Find 404! With " + code,
     });
   }
+  const cutting = await findUser.WithDrawRequestedBy.balance - findUser.Amount
+  console.log(cutting);
+
+  await Auth.findByIdAndUpdate(
+    { _id: findUser.WithDrawRequestedBy._id },
+    { balance: cutting },
+    { new: true }
+    );
   console.log(findUser);
   const user1 = await WithDraw.findByIdAndUpdate(findUser._id, {
-    checkCode: "",
+    checkCode: "", 
   });
   const user = await WithDraw.findByIdAndUpdate(
     user1._id,
 
     { Status: "Approve" },
 
+
     { new: true }
   );
 
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
-      config.EMAIL_FROM,
-      findUser.WithDrawRequestedBy.email,
-      "Congragulation! Your WithDrawl Requset Approve Successfully",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ;  text-decoration: underline;'> Congragulation! Your WithDrawl Requset Approve Successfully 👷‍♂️</h2>
-          <h4 style=' ${style}'> Your WithDraw Information </h4>
-          <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
-          <p style=' ${style}'> Amount:- ${findUser.Amount} send in your Binance account </p>
-          <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
+  // config.AWSSES.sendEmail(
+  //   emailTemplate(
+  //     config.EMAIL_FROM,
+  //     findUser.WithDrawRequestedBy.email,
+  //     "Congragulation! Your WithDrawl Requset Approve Successfully",
+  //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+  //     `        <h2 style='text-align:Center ;  text-decoration: underline;'> Congragulation! Your WithDrawl Requset Approve Successfully 👷‍♂️</h2>
+  //         <h4 style=' ${style}'> Your WithDraw Information </h4>
+  //         <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
+  //         <p style=' ${style}'> Amount:- ${findUser.Amount} send in your Binance account </p>
+  //         <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
          
-          `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.status(500).json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          message:
-            "WithDraw Approve Successfully and Approval send on User Email",
-        });
-      }
-    }
-  );
+  //         `
+  //   ),
+  //   (err, data) => {
+  //     if (err) {
+  //       return console.log(err);
+  //       res.status(500).json({ ok: false });
+  //     } else {
+  //       console.log(data);
+  //       return res.json({
+  //         ok: true,
+  //         message:
+  //           "WithDraw Approve Successfully and Approval send on User Email",
+  //       });
+  //     }
+  //   }
+  // );
+  sendHTML(
+        config.EMAIL_FROM,
+      findUser.WithDrawRequestedBy.email,
+  "Congragulation! Your WithDrawl Requset Approve Successfully",
+  `            <h2 style='text-align:Center ;  text-decoration: underline;'> Congragulation! Your WithDrawl Requset Approve Successfully 👷‍♂️</h2>
+        <h4 style=' ${style}'> Your WithDraw Information </h4>
+        <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
+        <p style=' ${style}'> Amount:- ${findUser.Amount} send in your  account </p>
+       <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
+
+
+    <p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+    <p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+    <p style='padding-left:22px ; font-size:16px'>Best regards </p>
+    <p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+   
+    `
+)
+res.json({
+  ok: true,
+  message: "WithDraw Approve Successfully and Approval send on User Email",
+});
 };
 
 export const RejectWithDraw = async (req, res) => {
@@ -1548,35 +1767,58 @@ export const RejectWithDraw = async (req, res) => {
   );
 
   // send mail with the verfication
-  config.AWSSES.sendEmail(
-    emailTemplate(
+  // config.AWSSES.sendEmail(
+  //   emailTemplate(
+  //     config.EMAIL_FROM,
+  //     findUser.WithDrawRequestedBy.email,
+  //     " Your WithDrawl Requset Reject UnSuccessfully",
+  //     // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
+  //     `        <h2 style='text-align:Center ;  text-decoration: underline;'> Your WithDrawl Requset Reject UnSuccessfully 👷‍♂️</h2>
+  //         <h4 style=' ${style}'> Your WithDraw Information </h4>
+  //         <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
+  //         <p style=' ${style}'> Amount:- No Amount send in your Binance account </p>
+  //         <p style=' ${style}'> Reason:- ${reason} </p>
+  //         <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
+         
+  //         `
+  //   ),
+  //   (err, data) => {
+  //     if (err) {
+  //       return console.log(err);
+  //       res.json({ ok: false });
+  //     } else {
+  //       console.log(data);
+  //       return res.json({
+  //         ok: true,
+  //         message:
+  //           "WithDraw Reject UnSuccessfully and Rejection send on User Email",
+  //       });
+  //     }
+  //   }
+  // );
+  sendHTML(
       config.EMAIL_FROM,
       findUser.WithDrawRequestedBy.email,
-      " Your WithDrawl Requset Reject UnSuccessfully",
-      // `Hi ${first_ame} ${last_name}, Please read your opt to activate your account. <a href="http://localhost:3000/auth/activate/${email}/${password}">Activate Account</a>`
-      `        <h2 style='text-align:Center ;  text-decoration: underline;'> Your WithDrawl Requset Reject UnSuccessfully 👷‍♂️</h2>
-          <h4 style=' ${style}'> Your WithDraw Information </h4>
-          <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
-          <p style=' ${style}'> Amount:- No Amount send in your Binance account </p>
-          <p style=' ${style}'> Reason:- ${reason} </p>
-          <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
-         
-          `
-    ),
-    (err, data) => {
-      if (err) {
-        return console.log(err);
-        res.json({ ok: false });
-      } else {
-        console.log(data);
-        return res.json({
-          ok: true,
-          message:
-            "WithDraw Reject UnSuccessfully and Rejection send on User Email",
-        });
-      }
-    }
-  );
+"Your WithDrawl Requset Reject UnSuccessfully",
+`            <h2 style='text-align:Center ;  text-decoration: underline;'> Your WithDrawl Requset Reject UnSuccessfully 👷‍♂️</h2>
+        <h4 style=' ${style}'> Your WithDraw Information </h4>
+           <p style=' ${style}'> Name:-  hello ${findUser.WithDrawRequestedBy.first_name} ${findUser.WithDrawRequestedBy.last_name} </p>
+         <p style=' ${style}'> Amount:- No Amount send in your  account </p>
+           <p style=' ${style}'> Reason:- ${reason} </p>
+           <p style=' ${style}'> Requested Date:- ${findUser.createdAt} </p>
+
+
+<p style='padding-left:22px ; font-size:16px'>At Ziaja.IO, your financial growth is our priority. By continuing to invest with us diverse portfolio of investment opportunities, and personalized investment strategies tailored to your goals. Our secure platform ensures your investments are protected while you benefit from competitive returns and innovative investment solutions </p>
+<p style='padding-left:22px ; font-size:16px'>Thank you for trusting Ziaja.IO with your financial future. </p>
+<p style='padding-left:22px ; font-size:16px'>Best regards </p>
+<p style='padding-left:22px ; font-size:16px'>The Ziaja.IO Team</p>
+
+`
+)
+res.json({
+  ok: true,
+  message: "WithDraw Reject UnSuccessfully and Rejection send on User Email",
+});
 };
 
 // export const ChangeLimit = async(req , res) => {
@@ -1742,8 +1984,8 @@ export const changePassword = async (req, res) => {
 // const snsClient = new AWS.SNS({
 //   region: config.AWS_REGION,
 //   credentials: {
-//       accessKeyId: config.AWS_A_KEY_ID,
-//       secretAccessKey: config.AWS_A_KEY
+//       accessKeyId: config.AWS_ACCESS_KEY_ID,
+//       secretAccessKey: config.AWS_SECRET_ACCESS_KEY
 //   }
 // })
 // export const sendOtp = async(req, res) => {
@@ -1765,8 +2007,8 @@ export const changePassword = async (req, res) => {
 // }
 // import { SNSClient, PublishCommand } from "@aws-sdk/client-sns"
 // const credentials = {
-//   accessKeyId: config.AWS_A_KEY_ID,
-//   secretAccessKey: config.AWS_A_KEY,
+//   accessKeyId: config.AWS_ACCESS_KEY_ID,
+//   secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 // };
 
 // const snsClient = new SNSClient({
@@ -1794,10 +2036,11 @@ import Investment from "../models/cashModel.js";
 import WithDraw from "../models/withDrawModel.js";
 import Chats from "../models/chatModel.js";
 import Picture from "../models/pictureModel.js";
+import { sendHTML } from "../helper/email2.js";
 export const sendOtp = async (req, res) => {
   // let twilio = require("twilio");
-  const accountSid = config.TW_ACCOUNT_SID;
-  const authToken = config.TW_AUTH_TOKEN;
+  const accountSid = config.TWILIO_ACCOUNT_SID;
+  const authToken = config.TWILIO_AUTH_TOKEN;
   const client = new twilio(accountSid, authToken);
   // const service = "mhc";
   // const body = `Your One Time Password for Mobile Health Checkup is ${req.body.otp}. Don't share this with anyone.`;
