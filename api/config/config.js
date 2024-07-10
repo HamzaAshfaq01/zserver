@@ -35,8 +35,8 @@ export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 //// twilio 
 
-export const TW_ACCOUNT_SID = process.env.TW_ACCOUNT_SID
-export const TW_AUTH_TOKEN = process.env.TW_AUTH_TOKEN
+export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
+export const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 
 // export the Twilio client so that it can be used elsewhere in our code
 // export const client = require('twilio')(TW_ACCOUNT_SID, TW_AUTH_TOKEN)
